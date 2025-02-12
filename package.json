@@ -26,5 +26,9 @@
     "prisma": "latest",
     "tailwindcss": "latest",
     "typescript": "latest"
+  },
+  "scripts": {
+    "dev": "bash ./scripts/setup.sh && next dev",
+    "setup": "bash ./scripts/setup.sh"
   }
 } 
