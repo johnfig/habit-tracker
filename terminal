@@ -1,5 +1,10 @@
-npx create-next-app@latest habit-streaks --typescript --tailwind --app --src
-cd habit-streaks
-npm install @prisma/client @auth/prisma-adapter @tanstack/react-query next-auth recharts
-npm install -D prisma @types/node @types/react @types/react-dom
-npm install @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-slot class-variance-authority clsx tailwind-merge 
+npm install
+
+# Then set up Prisma
+npx prisma generate
+npx prisma db push
+
+# Optional: seed the database
+npx prisma db seed
+
+npm run dev

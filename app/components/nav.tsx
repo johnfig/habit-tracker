@@ -1,9 +1,11 @@
-import Link from 'next/link'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../lib/auth'
+'use client'
 
-export async function Nav() {
-  const session = await getServerSession(authOptions)
+import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import React from 'react'
+
+export function Nav() {
+  const { data: session } = useSession()
 
   return (
     <nav className="border-b">
