@@ -28,6 +28,7 @@ type Habit = {
   frequency: number
   streak: number
   logs: Log[]
+  displayOrder: number
 }
 
 export function HabitList() {
@@ -170,6 +171,31 @@ export function HabitList() {
     }
   }
 
+  const handleReorder = async (reorderedHabits: Habit[]) => {
+    // Update local state immediately for smooth UI
+    setHabits(reorderedHabits)
+
+    // Update display order in the database after reordering
+    try {
+      const updates = reorderedHabits.map((habit, index) => ({
+        id: habit.id,
+        displayOrder: index,
+      }))
+
+      const response = await fetch('/api/habits/reorder', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ habits: updates }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update habit order')
+    } catch (error) {
+      console.error('Error updating habit order:', error)
+      // Revert to server state if the update fails
+      await fetchHabits()
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -204,9 +230,19 @@ export function HabitList() {
         </div>
 
         {/* Habits Grid */}
-        <Reorder.Group as="div" axis="y" values={habits} onReorder={setHabits} className="space-y-2">
+        <Reorder.Group
+          as="div"
+          axis="y"
+          values={habits}
+          onReorder={handleReorder}
+          className="space-y-2"
+        >
           {habits.map((habit) => (
-            <Reorder.Item key={habit.id} value={habit} as="div">
+            <Reorder.Item
+              key={habit.id}
+              value={habit}
+              as="div"
+            >
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

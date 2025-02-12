@@ -18,7 +18,10 @@ export async function GET() {
         take: 7,
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [
+      { displayOrder: 'asc' },
+      { createdAt: 'desc' },
+    ],
   })
 
   return NextResponse.json(habits)
@@ -27,17 +30,25 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
   try {
     const { title, frequency } = await req.json()
+    
+    const highestOrder = await prisma.habit.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { displayOrder: 'desc' },
+      select: { displayOrder: true },
+    })
+
     const habit = await prisma.habit.create({
       data: {
         title,
         frequency,
         userId: session.user.id,
+        displayOrder: (highestOrder?.displayOrder ?? -1) + 1,
       },
     })
 
