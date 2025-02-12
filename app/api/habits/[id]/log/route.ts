@@ -2,82 +2,52 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
+import { startOfDay } from 'date-fns'
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    return new NextResponse('Unauthorized', { status: 401 })
-  }
-
-  const json = await request.json()
-  const { completed, date } = json
-
-  // Verify habit belongs to user
-  const habit = await prisma.habit.findFirst({
-    where: {
-      id: params.id,
-      userId: session.user.id,
-    },
-  })
-
-  if (!habit) {
-    return new NextResponse('Not found', { status: 404 })
-  }
-
-  // Create or update log
-  const log = await prisma.log.upsert({
-    where: {
-      habitId_date: {
-        habitId: params.id,
-        date: new Date(date),
-      },
-    },
-    create: {
-      habitId: params.id,
-      date: new Date(date),
-      completed,
-    },
-    update: {
-      completed,
-    },
-  })
-
-  // Update streak
-  const logs = await prisma.log.findMany({
-    where: {
-      habitId: params.id,
-      completed: true,
-    },
-    orderBy: {
-      date: 'desc',
-    },
-  })
-
-  let streak = 0
-  for (const log of logs) {
-    if (streak === 0) {
-      streak = 1
-    } else {
-      const prevDate = logs[streak - 1].date
-      const diffDays = Math.floor(
-        (prevDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
-      )
-      if (diffDays === 1) {
-        streak++
-      } else {
-        break
-      }
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return new NextResponse('Unauthorized', { status: 401 })
     }
+
+    const habit = await prisma.habit.findUnique({
+      where: {
+        id: params.id,
+        userId: session.user.id,
+      },
+    })
+
+    if (!habit) {
+      return new NextResponse('Habit not found', { status: 404 })
+    }
+
+    // Use startOfDay to normalize the date
+    const today = startOfDay(new Date())
+
+    const log = await prisma.log.upsert({
+      where: {
+        habitId_date: {
+          habitId: params.id,
+          date: today,
+        },
+      },
+      create: {
+        habitId: params.id,
+        date: today,
+        completed: true,
+      },
+      update: {
+        completed: true,
+      },
+    })
+
+    return NextResponse.json(log)
+  } catch (error) {
+    console.error('Error logging habit:', error)
+    return new NextResponse('Internal error', { status: 500 })
   }
-
-  await prisma.habit.update({
-    where: { id: params.id },
-    data: { streak },
-  })
-
-  return NextResponse.json(log)
 } 
