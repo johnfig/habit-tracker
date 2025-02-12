@@ -40,6 +40,29 @@ export function HabitList() {
 
   useEffect(() => {
     fetchHabits()
+
+    // Listen for new habits
+    const handleHabitCreated = (event: CustomEvent<Habit>) => {
+      // Ensure the new habit has an empty logs array
+      const newHabit = {
+        ...event.detail,
+        logs: [] // Initialize with empty logs array
+      }
+      setHabits(currentHabits => [...currentHabits, newHabit])
+    }
+
+    // Listen for habit updates
+    const handleHabitUpdated = () => {
+      fetchHabits()
+    }
+
+    window.addEventListener('habitCreated', handleHabitCreated as EventListener)
+    window.addEventListener('habitUpdated', handleHabitUpdated)
+    
+    return () => {
+      window.removeEventListener('habitCreated', handleHabitCreated as EventListener)
+      window.removeEventListener('habitUpdated', handleHabitUpdated)
+    }
   }, [])
 
   const fetchHabits = async () => {

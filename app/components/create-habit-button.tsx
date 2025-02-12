@@ -32,13 +32,18 @@ export function CreateHabitButton({ className }: CreateHabitButtonProps) {
 
       if (!response.ok) throw new Error('Failed to create habit')
       
+      const newHabit = await response.json()
+      
+      // Dispatch custom event with the new habit data
+      const event = new CustomEvent('habitCreated', { 
+        detail: newHabit 
+      })
+      window.dispatchEvent(event)
+      
       // Reset form and close modal
       setIsOpen(false)
       setTitle('')
       setFrequency(1)
-
-      // Force refresh the server components
-      router.refresh()
     } catch (error) {
       console.error('Error creating habit:', error)
     } finally {
