@@ -45,9 +45,9 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition-all duration-300" />
+            <div className="absolute -inset-2 bg-gradient-to-r from-primary via-purple-500 to-blue-500 rounded-xl blur opacity-25 group-hover:opacity-75 transition-all duration-300" />
             <div className="relative">
-              <CreateHabitButton />
+              <CreateHabitButton className="text-xl h-16 px-10 font-semibold" />
             </div>
           </div>
         </div>

@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Plus, Calendar, Target, ArrowRight } from 'lucide-react'
 import { Modal } from './ui/modal'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-export function CreateHabitButton() {
+interface CreateHabitButtonProps {
+  className?: string
+}
+
+export function CreateHabitButton({ className }: CreateHabitButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [frequency, setFrequency] = useState(1)
@@ -42,13 +48,21 @@ export function CreateHabitButton() {
 
   return (
     <>
-      <button
+      <Button
+        size="lg"
+        className={cn(
+          "relative group transition-all duration-300 ease-out hover:scale-105",
+          "bg-gradient-to-r from-primary via-purple-500 to-blue-500",
+          "hover:from-primary/90 hover:via-purple-500/90 hover:to-blue-500/90",
+          "text-white shadow-lg hover:shadow-xl",
+          "flex items-center gap-3 min-h-[4rem]",
+          className
+        )}
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-primary to-purple-600 px-4 py-2 text-sm font-medium text-primary-foreground hover:from-primary/90 hover:to-purple-600/90 shadow-lg shadow-primary/20 transition-all duration-300"
       >
-        <Plus className="mr-2 h-4 w-4" />
-        New Habit
-      </button>
+        <Plus className="h-6 w-6" />
+        <span>New Habit</span>
+      </Button>
 
       <Modal
         isOpen={isOpen}
