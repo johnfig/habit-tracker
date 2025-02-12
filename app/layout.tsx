@@ -12,13 +12,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="h-full scroll-smooth">
+      <body className={`${inter.className} h-full antialiased`}>
         <Providers>
           <Nav />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
+          <main>{children}</main>
         </Providers>
       </body>
     </html>

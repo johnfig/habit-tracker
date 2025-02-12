@@ -1,33 +1,57 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { HabitCard } from './habit-card'
-import { Skeleton } from './ui/skeleton'
+
+type Habit = {
+  id: string
+  title: string
+  frequency: number
+  streak: number
+  logs: {
+    id: string
+    date: string
+    completed: boolean
+  }[]
+}
 
 export function HabitList() {
-  const { data: habits, isLoading } = useQuery({
-    queryKey: ['habits'],
-    queryFn: async () => {
-      const res = await fetch('/api/habits')
-      return res.json()
-    },
-  })
+  const [habits, setHabits] = useState<Habit[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchHabits() {
+      try {
+        const response = await fetch('/api/habits')
+        if (!response.ok) throw new Error('Failed to fetch habits')
+        const data = await response.json()
+        setHabits(data)
+      } catch (error) {
+        console.error('Error fetching habits:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchHabits()
+  }, [])
 
   if (isLoading) {
+    return <div>Loading habits...</div>
+  }
+
+  if (habits.length === 0) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-[200px]" />
-        ))}
+      <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+        <h3 className="mt-2 text-sm font-semibold">No habits yet</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Get started by creating a new habit
+        </p>
       </div>
     )
   }
 
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {habits?.map((habit: any) => (
-        <HabitCard key={habit.id} habit={habit} />
-      ))}
-    </div>
-  )
+  return habits.map((habit) => (
+    <HabitCard key={habit.id} habit={habit} />
+  ))
 } 

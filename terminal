@@ -1,10 +1,136 @@
+# 1. Install dependencies
+rm -rf node_modules package-lock.json
+
+# Clean Prisma
+rm -rf node_modules/.prisma
+
+# Install dependencies with specific versions
+npm install @prisma/client@5.7.1 @auth/prisma-adapter@1.0.12 next-auth@4.24.5
+
+# Install dev dependencies
+npm install -D prisma@5.7.1
+
+# Regenerate Prisma client
+npx prisma generate
+
+# Install remaining dependencies
 npm install
 
-# Then set up Prisma
+# Push schema changes
+npx prisma db push
+
+# 2. Create a PostgreSQL database named habit_streaks
+# If you have PostgreSQL installed, run:
+dropdb habit_streaks
+createdb habit_streaks
+
+# 3. Update your .env file with your PostgreSQL credentials
+# Example: If your PostgreSQL username is 'postgres' and no password:
+echo 'DATABASE_URL="postgresql://postgres@localhost:5432/habit_streaks"' > .env
+echo 'NEXTAUTH_SECRET="development-secret"' >> .env
+echo 'NEXTAUTH_URL="http://localhost:3000"' >> .env
+
+# 4. Set up the database schema
+rm -rf node_modules/.prisma
+npm install
 npx prisma generate
 npx prisma db push
 
-# Optional: seed the database
-npx prisma db seed
-
+# 5. Start the development server
+rm -rf .next
 npm run dev
+
+mkdir scripts
+touch scripts/setup.sh
+chmod +x scripts/setup.sh
+
+npm run setup
+
+brew install postgresql@14
+
+# Clear Next.js cache
+rm -rf .next
+
+# Generate Prisma client
+npx prisma generate
+
+# Push schema changes to database
+npx prisma db push
+
+# Start the development server
+npm run dev
+
+npm install -D tailwindcss postcss autoprefixer
+npm install clsx tailwind-merge
+
+npx tailwindcss init -p
+
+# Connect to PostgreSQL
+psql postgres
+
+# Create the database if it doesn't exist
+CREATE DATABASE habit_streaks;
+
+# Grant all privileges to your user
+GRANT ALL PRIVILEGES ON DATABASE habit_streaks TO johnfigueiredo;
+
+# Connect to the habit_streaks database
+\c habit_streaks
+
+# Grant schema permissions
+GRANT ALL ON SCHEMA public TO johnfigueiredo;
+
+# Exit psql
+\q
+
+# Clear everything
+rm -rf node_modules .next
+rm package-lock.json
+
+# Reinstall dependencies
+npm install
+npm install nodemailer @types/nodemailer
+
+# Reset database and apply schema
+dropdb habit_streaks
+createdb habit_streaks
+npx prisma generate
+npx prisma db push
+
+# Start the development server
+npm run dev
+
+npm install bcryptjs
+npm install -D @types/bcryptjs
+
+# Drop the existing database
+dropdb habit_streaks
+
+# Create a new database
+createdb habit_streaks
+
+# Push the schema changes
+npx prisma db push
+
+# Generate the Prisma client
+npx prisma generate
+
+# Clear Next.js cache
+rm -rf .next
+
+# Restart the server
+npm run dev
+
+# Clear all caches
+rm -rf .next
+rm -rf node_modules/.cache
+
+# Reinstall dependencies
+npm install
+
+# Restart the server
+npm run dev
+
+npm install class-variance-authority
+
+npm install @radix-ui/react-dialog @radix-ui/react-label @radix-ui/react-select

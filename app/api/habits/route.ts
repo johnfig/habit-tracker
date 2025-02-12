@@ -24,21 +24,26 @@ export async function GET() {
   return NextResponse.json(habits)
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
+
+  if (!session?.user) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
-  const json = await request.json()
-  const habit = await prisma.habit.create({
-    data: {
-      title: json.title,
-      frequency: json.frequency,
-      userId: session.user.id,
-    },
-  })
+  try {
+    const { title, frequency } = await req.json()
+    const habit = await prisma.habit.create({
+      data: {
+        title,
+        frequency,
+        userId: session.user.id,
+      },
+    })
 
-  return NextResponse.json(habit)
+    return NextResponse.json(habit)
+  } catch (error) {
+    console.error('Error creating habit:', error)
+    return new NextResponse('Error creating habit', { status: 500 })
+  }
 } 
