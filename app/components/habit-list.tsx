@@ -3,18 +3,20 @@
 import { useEffect, useState } from 'react'
 import { motion, Reorder } from 'framer-motion'
 import { CheckCircle2, GripVertical, Flame, XCircle, Circle } from 'lucide-react'
-import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from 'date-fns'
+import { format, startOfWeek, addDays, isToday, isSameDay, parseISO, isFuture, isPast } from 'date-fns'
+
+type Log = {
+  id: string
+  date: string
+  completed: boolean
+}
 
 type Habit = {
   id: string
   title: string
   frequency: number
   streak: number
-  logs: {
-    id: string
-    date: string
-    completed: boolean
-  }[]
+  logs: Log[]
 }
 
 export function HabitList() {
@@ -61,6 +63,58 @@ export function HabitList() {
       await fetchHabits()
     } catch (error) {
       console.error('Error logging habit:', error)
+    }
+  }
+
+  const getStatusStyles = (date: Date, completed: boolean | undefined) => {
+    if (isFuture(date)) {
+      return {
+        bg: 'bg-muted/40',
+        ring: '',
+        text: 'text-muted-foreground/50',
+        icon: null
+      }
+    }
+
+    if (isToday(date)) {
+      if (completed) {
+        return {
+          bg: 'bg-green-500/20',
+          ring: 'ring-2 ring-green-500/20',
+          text: 'text-green-500',
+          icon: <CheckCircle2 className="h-5 w-5" />
+        }
+      }
+      return {
+        bg: 'bg-primary/10 hover:bg-primary/20',
+        ring: 'ring-2 ring-primary/20',
+        text: 'text-primary',
+        icon: <Circle className="h-5 w-5" />
+      }
+    }
+
+    if (isPast(date)) {
+      if (completed) {
+        return {
+          bg: 'bg-green-500/20',
+          ring: 'ring-2 ring-green-500/20',
+          text: 'text-green-500',
+          icon: <CheckCircle2 className="h-5 w-5" />
+        }
+      }
+      return {
+        bg: 'bg-red-500/20',
+        ring: 'ring-2 ring-red-500/20',
+        text: 'text-red-500',
+        icon: <XCircle className="h-5 w-5" />
+      }
+    }
+
+    return {
+      bg: 'bg-muted/40',
+      ring: '',
+      text: 'text-muted-foreground/50',
+      icon: null
     }
   }
 
@@ -128,7 +182,7 @@ export function HabitList() {
                 {weekDates.map(date => {
                   const completed = getCompletionStatus(habit, date)
                   const isCurrentDay = isToday(date)
-                  const isPastDay = date < new Date()
+                  const status = getStatusStyles(date, completed)
 
                   return (
                     <div
@@ -142,25 +196,13 @@ export function HabitList() {
                         whileTap={isCurrentDay && !completed ? { scale: 0.95 } : {}}
                         onClick={() => isCurrentDay && !completed && handleComplete(habit.id)}
                         className={`
-                          w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
-                          ${completed 
-                            ? 'bg-green-500/20 text-green-500 ring-2 ring-green-500/20' 
-                            : isPastDay
-                              ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/20'
-                              : isCurrentDay
-                                ? 'bg-primary/10 text-primary hover:bg-primary/20 ring-2 ring-primary/20'
-                                : 'bg-muted/40'
-                          }
+                          w-8 h-8 rounded-full flex items-center justify-center
+                          ${status.bg} ${status.ring} ${status.text}
+                          ${isCurrentDay && !completed ? 'cursor-pointer' : 'cursor-default'}
                           transition-all duration-200
                         `}
                       >
-                        {completed ? (
-                          <CheckCircle2 className="h-5 w-5" />
-                        ) : isPastDay ? (
-                          <XCircle className="h-5 w-5" />
-                        ) : isCurrentDay ? (
-                          <Circle className="h-5 w-5" />
-                        ) : null}
+                        {status.icon}
                       </motion.div>
                     </div>
                   )
