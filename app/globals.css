@@ -73,4 +73,53 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgb(var(--primary) / 0.15) 1px, transparent 0);
+    background-size: 32px 32px;
+  }
+
+  .bg-grid-pattern {
+    background-size: 100px 100px;
+    background-image: linear-gradient(to right, rgb(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--primary) / 0.05) 1px, transparent 1px);
+  }
+
+  .animate-gradient {
+    animation: gradient 15s ease infinite;
+    background-size: 400% 400%;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 3s infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-2%); }
+  50% { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 } 

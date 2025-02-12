@@ -134,3 +134,11 @@ npm run dev
 npm install class-variance-authority
 
 npm install @radix-ui/react-dialog @radix-ui/react-label @radix-ui/react-select
+
+npm install framer-motion@latest
+
+# Clear Next.js cache
+rm -rf .next
+
+# Restart the development server
+npm run dev
