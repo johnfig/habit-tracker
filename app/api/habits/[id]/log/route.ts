@@ -5,7 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 
 export async function POST(
   request: Request,
-  { params }: { params: { habitId: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions)
   
@@ -19,7 +19,7 @@ export async function POST(
   // Verify habit belongs to user
   const habit = await prisma.habit.findFirst({
     where: {
-      id: params.habitId,
+      id: params.id,
       userId: session.user.id,
     },
   })
@@ -32,12 +32,12 @@ export async function POST(
   const log = await prisma.log.upsert({
     where: {
       habitId_date: {
-        habitId: params.habitId,
+        habitId: params.id,
         date: new Date(date),
       },
     },
     create: {
-      habitId: params.habitId,
+      habitId: params.id,
       date: new Date(date),
       completed,
     },
@@ -49,7 +49,7 @@ export async function POST(
   // Update streak
   const logs = await prisma.log.findMany({
     where: {
-      habitId: params.habitId,
+      habitId: params.id,
       completed: true,
     },
     orderBy: {
@@ -75,7 +75,7 @@ export async function POST(
   }
 
   await prisma.habit.update({
-    where: { id: params.habitId },
+    where: { id: params.id },
     data: { streak },
   })
 
