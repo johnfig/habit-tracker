@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { motion, Reorder } from 'framer-motion'
-import { CheckCircle2, GripVertical, Flame, XCircle } from 'lucide-react'
-import { format, isToday } from 'date-fns'
+import { CheckCircle2, GripVertical, Flame, XCircle, Circle } from 'lucide-react'
+import { format, startOfWeek, addDays, isToday, isSameDay, parseISO } from 'date-fns'
 
 type Habit = {
   id: string
@@ -20,6 +20,10 @@ type Habit = {
 export function HabitList() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  // Get current week's dates
+  const startDate = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const weekDates = Array.from({ length: 7 }, (_, i) => addDays(startDate, i))
 
   useEffect(() => {
     fetchHabits()
@@ -38,10 +42,11 @@ export function HabitList() {
     }
   }
 
-  const isCompletedToday = (habit: Habit) => {
-    return habit.logs.some(log => 
-      isToday(new Date(log.date)) && log.completed
+  const getCompletionStatus = (habit: Habit, date: Date) => {
+    const log = habit.logs.find(log => 
+      isSameDay(parseISO(log.date), date)
     )
+    return log?.completed
   }
 
   const handleComplete = async (habitId: string) => {
@@ -53,8 +58,6 @@ export function HabitList() {
       })
 
       if (!response.ok) throw new Error('Failed to log habit')
-      
-      // Refresh habits after completion
       await fetchHabits()
     } catch (error) {
       console.error('Error logging habit:', error)
@@ -69,87 +72,104 @@ export function HabitList() {
     )
   }
 
-  if (habits.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-primary/20 bg-background/40 backdrop-blur-sm p-8 text-center">
-        <h3 className="font-medium text-lg text-muted-foreground">No habits yet</h3>
-        <p className="mt-1 text-sm text-muted-foreground/80">
-          Get started by creating a new habit
-        </p>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-2">
-      <Reorder.Group as="div" axis="y" values={habits} onReorder={setHabits} className="space-y-2">
-        {habits.map((habit) => {
-          const completed = isCompletedToday(habit)
-          
-          return (
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm col-span-full">
+      <div className="p-6 space-y-6">
+        {/* Week Header */}
+        <div className="grid grid-cols-[250px_repeat(7,1fr)] gap-2">
+          <div className="font-medium text-muted-foreground">Habits</div>
+          {weekDates.map(date => (
+            <div
+              key={date.toISOString()}
+              className={`text-center p-2 rounded-md ${
+                isToday(date) ? 'bg-muted' : ''
+              }`}
+            >
+              <div className={`text-sm font-medium ${
+                isToday(date) ? 'text-primary' : 'text-muted-foreground'
+              }`}>
+                {format(date, 'EEE')}
+              </div>
+              <div className="text-xs text-muted-foreground/60">
+                {format(date, 'd')}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Habits Grid */}
+        <Reorder.Group as="div" axis="y" values={habits} onReorder={setHabits} className="space-y-2">
+          {habits.map((habit) => (
             <Reorder.Item key={habit.id} value={habit} as="div">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center gap-4 p-4 backdrop-blur-sm rounded-lg border transition-all duration-300 ${
-                  completed 
-                    ? 'bg-primary/5 border-primary/20' 
-                    : 'bg-background/60 border-primary/10 hover:border-primary/20'
-                }`}
+                className="grid grid-cols-[250px_repeat(7,1fr)] gap-2 items-center"
               >
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="cursor-grab active:cursor-grabbing p-2 rounded-md hover:bg-primary/5"
-                >
-                  <GripVertical className="h-5 w-5 text-muted-foreground" />
-                </motion.button>
-
-                <div className="flex-1 flex items-center gap-4">
-                  <div className="flex-1">
-                    <h3 className={`font-medium ${completed ? 'text-primary' : ''}`}>
-                      {habit.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Flame className="h-4 w-4 text-primary" />
+                {/* Habit Info */}
+                <div className="flex items-center gap-3 bg-background/50 p-3 rounded-md">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="cursor-grab active:cursor-grabbing p-1.5 rounded-md hover:bg-primary/5"
+                  >
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  </motion.button>
+                  <div>
+                    <h3 className="font-medium text-sm">{habit.title}</h3>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Flame className="h-3 w-3 text-primary" />
                       <span>{habit.streak} day streak</span>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {format(new Date(), 'EEEE')}
-                  </div>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => !completed && handleComplete(habit.id)}
-                  disabled={completed}
-                  className={`p-2 rounded-full transition-colors ${
-                    completed
-                      ? 'bg-primary/20 text-primary cursor-not-allowed'
-                      : 'hover:bg-primary/10 text-muted-foreground hover:text-primary'
-                  }`}
-                >
-                  <motion.div
-                    animate={completed ? {
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 360],
-                    } : undefined}
-                  >
-                    {completed ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : (
-                      <XCircle className="h-5 w-5" />
-                    )}
-                  </motion.div>
-                </motion.button>
+                {/* Week Status */}
+                {weekDates.map(date => {
+                  const completed = getCompletionStatus(habit, date)
+                  const isCurrentDay = isToday(date)
+                  const isPastDay = date < new Date()
+
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className={`flex items-center justify-center p-2 rounded-md ${
+                        isCurrentDay ? 'bg-muted' : ''
+                      }`}
+                    >
+                      <motion.div
+                        whileHover={isCurrentDay && !completed ? { scale: 1.1 } : {}}
+                        whileTap={isCurrentDay && !completed ? { scale: 0.95 } : {}}
+                        onClick={() => isCurrentDay && !completed && handleComplete(habit.id)}
+                        className={`
+                          w-8 h-8 rounded-full flex items-center justify-center cursor-pointer
+                          ${completed 
+                            ? 'bg-green-500/20 text-green-500 ring-2 ring-green-500/20' 
+                            : isPastDay
+                              ? 'bg-red-500/20 text-red-500 ring-2 ring-red-500/20'
+                              : isCurrentDay
+                                ? 'bg-primary/10 text-primary hover:bg-primary/20 ring-2 ring-primary/20'
+                                : 'bg-muted/40'
+                          }
+                          transition-all duration-200
+                        `}
+                      >
+                        {completed ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : isPastDay ? (
+                          <XCircle className="h-5 w-5" />
+                        ) : isCurrentDay ? (
+                          <Circle className="h-5 w-5" />
+                        ) : null}
+                      </motion.div>
+                    </div>
+                  )
+                })}
               </motion.div>
             </Reorder.Item>
-          )
-        })}
-      </Reorder.Group>
+          ))}
+        </Reorder.Group>
+      </div>
     </div>
   )
 } 

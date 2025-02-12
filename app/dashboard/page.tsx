@@ -52,17 +52,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-        
-        {/* Analytics Section */}
-        <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-primary/20 shadow-2xl shadow-primary/10 transform hover:scale-[1.01] transition-all duration-300">
-          <div className="relative">
-            <div className="absolute -inset-x-4 -inset-y-4 z-0 bg-gradient-to-r from-primary/5 to-purple-500/5 blur-3xl" />
-            <div className="relative z-10">
-              <AnalyticsDashboard habits={habits} />
-            </div>
-          </div>
-        </div>
-        
+
         {/* Habits Grid Section */}
         <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-primary/20 shadow-2xl shadow-primary/10">
           <div className="flex items-center justify-between mb-8">
@@ -73,6 +63,22 @@ export default async function DashboardPage() {
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <HabitList />
+          </div>
+        </div>
+        
+        {/* Analytics Section */}
+        <div className="bg-background/80 backdrop-blur-xl rounded-2xl p-8 border border-primary/20 shadow-2xl shadow-primary/10 transform hover:scale-[1.01] transition-all duration-300">
+        <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500">
+              Habit Analytics
+            </h2>
+            <div className="h-px flex-1 mx-6 bg-gradient-to-r from-primary/20 via-purple-500/20 to-transparent" />
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-x-4 -inset-y-4 z-0 bg-gradient-to-r from-primary/5 to-purple-500/5 blur-3xl" />
+            <div className="relative z-10">
+              <AnalyticsDashboard habits={habits} />
+            </div>
           </div>
         </div>
       </div>
