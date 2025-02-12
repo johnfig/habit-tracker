@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '../lib/auth'
 import { HabitList } from '../components/habit-list'
 import { CreateHabitButton } from '../components/create-habit-button'
-import { AnalyticsDashboard } from '../components/analytics-dashboard'
+import { AnalyticsDashboardClient } from '../components/analytics-dashboard-client'
 import { prisma } from '../lib/prisma'
 
 export default async function DashboardPage() {
@@ -71,7 +71,7 @@ export default async function DashboardPage() {
             </h2>
             <div className="hidden sm:block h-px flex-1 mx-6 bg-gradient-to-r from-primary/20 via-purple-500/20 to-transparent" />
           </div>
-          <AnalyticsDashboard habits={habits} />
+          <AnalyticsDashboardClient initialHabits={habits} />
         </div>
       </div>
 

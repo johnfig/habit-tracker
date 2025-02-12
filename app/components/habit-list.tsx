@@ -71,7 +71,12 @@ export function HabitList() {
       })
 
       if (!response.ok) throw new Error('Failed to log habit')
+      
+      // Fetch updated habits
       await fetchHabits()
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(new Event('habitUpdated'))
     } catch (error) {
       console.error('Error logging habit:', error)
     }
