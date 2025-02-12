@@ -35,26 +35,35 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions)
-
-  if (!session?.user) {
-    return new NextResponse('Unauthorized', { status: 401 })
-  }
-
   try {
-    await prisma.habit.delete({
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    // Verify the habit belongs to the user
+    const habit = await prisma.habit.findUnique({
       where: {
         id: params.id,
-        userId: session.user.id as string,
+        userId: session.user.id,
       },
+    })
+
+    if (!habit) {
+      return new NextResponse('Habit not found', { status: 404 })
+    }
+
+    // Delete the habit and all associated logs
+    await prisma.habit.delete({
+      where: { id: params.id },
     })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {
     console.error('Error deleting habit:', error)
-    return new NextResponse('Error deleting habit', { status: 500 })
+    return new NextResponse('Internal error', { status: 500 })
   }
 } 

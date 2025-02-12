@@ -2,8 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { motion, Reorder } from 'framer-motion'
-import { CheckCircle2, GripVertical, Flame, XCircle, Circle } from 'lucide-react'
+import { CheckCircle2, GripVertical, Flame, XCircle, Circle, Trash2 } from 'lucide-react'
 import { format, startOfWeek, addDays, isToday, isSameDay, parseISO, isFuture, isPast } from 'date-fns'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type Log = {
   id: string
@@ -63,6 +74,19 @@ export function HabitList() {
       await fetchHabits()
     } catch (error) {
       console.error('Error logging habit:', error)
+    }
+  }
+
+  const handleDelete = async (habitId: string) => {
+    try {
+      const response = await fetch(`/api/habits/${habitId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) throw new Error('Failed to delete habit')
+      await fetchHabits()
+    } catch (error) {
+      console.error('Error deleting habit:', error)
     }
   }
 
@@ -169,13 +193,42 @@ export function HabitList() {
                   >
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </motion.button>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-medium text-sm">{habit.title}</h3>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Flame className="h-3 w-3 text-primary" />
                       <span>{habit.streak} day streak</span>
                     </div>
                   </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </motion.button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Habit</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this habit? This action cannot be undone 
+                          and all tracking history will be lost.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(habit.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
 
                 {/* Week Status */}
